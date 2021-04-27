@@ -33,7 +33,7 @@ Movie.destroy_all
 puts "Database cleaned"
 
 url = "http://tmdb.lewagon.com/movie/top_rated"
-50.times do |i|
+10.times do |i|
   puts "Importing movies from page #{i + 1}"
   movies = JSON.parse(open("#{url}?page=#{i + 1}").read)['results']
   movies.each do |movie|
