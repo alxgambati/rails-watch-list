@@ -12,19 +12,39 @@
 require 'json'
 require 'open-uri'
 
-for i in (400..500) do
-  url = "https://api.themoviedb.org/3/movie/#{i}?api_key=587e2cb0836bf3a253a06cda10420459"
-  movie_serialized = URI.open(url).read
-  movie = JSON.parse(movie_serialized)
+# for i in (400..500) do
+#   url = "https://api.themoviedb.org/3/movie/#{i}?api_key=587e2cb0836bf3a253a06cda10420459"
+#   movie_serialized = URI.open(url).read
+#   movie = JSON.parse(movie_serialized)
 
-  if movie["success"] == "false"
-    puts "Movie #{i} #{movie["original_title"]} Not Created!"
-  else
+#   if movie["success"] == "false"
+#     puts "Movie #{i} #{movie["original_title"]} Not Created!"
+#   else
+#     Movie.create(
+#       title: movie["original_title"],
+#       overview: movie["overview"],
+#       poster_url: "https://www.themoviedb.org/t/p/w220_and_h330_face#{movie["poster_path"]}",
+#       rating: movie["vote_average"])
+#     puts "Movie #{i} #{movie["original_title"]} Created!"
+#   end
+# end
+puts "Cleaning up database..."
+Movie.destroy_all
+puts "Database cleaned"
+
+url = "http://tmdb.lewagon.com/movie/top_rated"
+50.times do |i|
+  puts "Importing movies from page #{i + 1}"
+  movies = JSON.parse(open("#{url}?page=#{i + 1}").read)['results']
+  movies.each do |movie|
+    puts "Creating #{movie['title']}"
+    base_poster_url = "https://image.tmdb.org/t/p/original"
     Movie.create(
-      title: movie["original_title"],
-      overview: movie["overview"],
-      poster_url: "https://www.themoviedb.org/t/p/w220_and_h330_face#{movie["poster_path"]}",
-      rating: movie["vote_average"])
-    puts "Movie #{i} #{movie["original_title"]} Created!"
+      title: movie['title'],
+      overview: movie['overview'],
+      poster_url: "#{base_poster_url}#{movie['backdrop_path']}",
+      rating: movie['vote_average']
+    )
   end
 end
+puts "Movies created"
